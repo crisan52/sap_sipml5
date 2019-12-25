@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CTI>
+  <PROTOCOL>HTTP</PROTOCOL>
+  <HTTPPORT>36729</HTTPPORT>
+  <HTTPSPORT>36731</HTTPSPORT>
+  <RUNASADMIN>F</RUNASADMIN>
+<CLIENT>
+  <ID>BCM</ID>
+  <KEY>1234</KEY>
+</CLIENT>
+  <CLIENT>
+    <ID>AVAYA</ID>
+    <KEY>5678</KEY>
+  </CLIENT>
+  <CLIENT>
+    <ID>CISCO</ID>
+    <KEY>9876</KEY>
+  </CLIENT>
+</CTI>

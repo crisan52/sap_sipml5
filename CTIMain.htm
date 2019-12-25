@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>SAP Service Cloud Main Page</title>
+
+<script type="text/javascript">
+
+    var CONSTANT = {
+        CTI_PAYLOAD: "cti_payload",
+        CTI_PAYLOAD_URL: "/ctipayload/"
+    };
+
+    var CONSTANT_OUT = {
+        COD_CID: "SAPCOD",
+        COD_DATA: "DATA"
+    };
+
+    var xmlhttp;
+
+    function pushMsg(ctidata) {
+        if (ctidata.length > 0) {
+            window.parent.postMessage(ctidata, '*');
+        }
+        if (ctidata == null) {
+            ctidata = getFromLocalStorage(CONSTANT.CTI_PAYLOAD);
+            alert(" From storage: " + ctidata);
+        }
+    }
+
+    function setInLocalStorage(key, value) {
+        localStorage.setItem(key, value);
+    }
+
+    function getFromLocalStorage(key) {
+        value = localStorage.getItem(key);
+        return value;
+    }
+
+    //Get XMLHTTPRequest object
+    function getXMLHttpReq() {
+        var xmlhttp;
+        if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp = new XMLHttpRequest();
+        } else { // code for IE6, IE5
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        if (!xmlhttp) {
+            alert("XMLHttp not supported on this platform");
+        }
+        return xmlhttp;
+    }
+
+    function constructURI() {
+            //This URI should be the one getting the data from server. figure out how to get this dynamically
+        var BaseUri = location.href.split(location.pathname)[0];
+        var uri = BaseUri + CONSTANT.CTI_PAYLOAD_URL;
+        return uri;
+    }
+
+    function pushXMLPayloadToCOD(xmlhttp) {
+        var payload;
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                try {
+                    payload = xmlhttp.responseText;
+                } catch (e) {
+                    var response = "Aborted";
+                }
+                pushMsg(payload);
+                setInLocalStorage(CONSTANT.CTI_PAYLOAD, payload);
+            }
+        }
+        var payloaduri = constructURI();
+        sendRequestToServer(xmlhttp, payloaduri);
+    }
+
+    function bindEvent(e, eventName, eventHandler) {
+        if (e.addEventListener) {
+            e.addEventListener(eventName, eventHandler, false);
+        } else if (e.attachEvent) {
+            e.attachEvent('on' + eventName, eventHandler);
+        }
+    }
+
+    bindEvent(window, "message", sendOutboundRequestToServer);
+
+    function sendOutboundRequestToServer(contextParams) {
+        if (event.source != window) {
+            var obj = contextParams.data;
+            var url = "/?CID=" + CONSTANT_OUT.COD_CID + "&" + CONSTANT_OUT.COD_DATA + "=" + encodeURIComponent(JSON.stringify(obj));
+            postToCTIAdapter(url);
+        }
+    }
+
+    function postToCTIAdapter(url) {
+        var xmlHTTPReqOut = getXMLHttpReq();
+        if (xmlHTTPReqOut) {
+            var BaseUri = location.href.split(location.pathname)[0];
+            var uri = BaseUri + url;
+            xmlHTTPReqOut.open("GET", uri, true);
+            xmlHTTPReqOut.setRequestHeader("Content-type", "application/json");
+            xmlHTTPReqOut.send();
+        }
+    }
+
+    function sendRequestToServer(xmlhttp, uri) {
+            //Open connection to server
+            xmlhttp.open("GET", uri, true);
+            
+            //send request to server
+            xmlhttp.send();
+
+            //Start all over again
+            setTimeout('initialize()', 1000); 
+    }
+
+    function initialize() {
+        if (xmlhttp) {
+            xmlhttp.abort();
+        }
+      xmlhttp = getXMLHttpReq();
+      if (xmlhttp) {
+        pushXMLPayloadToCOD(xmlhttp);
+      }
+    }
+</script>
+
+</head>
+
+<body onload="initialize()" style="background-color:white;">
+    <img src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" />
+    <hr style="color:gold;font-size:65px" />
+    <p style="font-family:verdana;color:black;font-size:18px">
+        <br />SAP Service Cloud CTI Integration Main Page<br />
+        <br />
+        <br />
+    </p>
+    <hr style="color:gold;font-size:65px">
+    <a href="http://go.sap.com/product/crm/cloud-customer-engagement.html">About SAP Cloud</a>
+
+<div id="myDiv"></div>
+</body>
+</html>
+
