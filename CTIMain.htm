@@ -24,8 +24,10 @@
     };
 
     var CONSTANT_OUT = {
-        COD_CID: "SAPCOD",
+        //COD_CID: "SAPCOD",
+        COD_CID: "BCM1234",
         COD_DATA: "DATA"
+        //COD_DATA: "DATA"
     };
 
     var xmlhttp;
@@ -69,6 +71,7 @@
             //This URI should be the one getting the data from server. figure out how to get this dynamically
         var BaseUri = location.href.split(location.pathname)[0];
         var uri = BaseUri + CONSTANT.CTI_PAYLOAD_URL;
+        console.log('constructURI ' + uri)
         return uri;
     }
 
@@ -100,11 +103,14 @@
     bindEvent(window, "message", sendOutboundRequestToServer);
 
     function sendOutboundRequestToServer(contextParams) {
-        if (event.source != window) {
+      console.log('============sendOutboundRequestToServer')
+        //if (event.source != window) {
             var obj = contextParams.data;
-            var url = "/?CID=" + CONSTANT_OUT.COD_CID + "&" + CONSTANT_OUT.COD_DATA + "=" + encodeURIComponent(JSON.stringify(obj));
+            //var url = "/?CID=" + CONSTANT_OUT.COD_CID + "&" + CONSTANT_OUT.COD_DATA + "=" + encodeURIComponent(JSON.stringify(obj));
+            var url = "/?CID=BCM1234&ANI=125&DNIS=129";
+            console.log('URL ' + url)
             postToCTIAdapter(url);
-        }
+        //}
     }
 
     function postToCTIAdapter(url) {
@@ -149,7 +155,6 @@
         initialize();
         initWebPhone();
         //Realiza el login de forma automatica
-        //sipRegister();
         //console.log(btnRegister.disabled);
     }
 
@@ -257,8 +262,7 @@
           // initialize SIPML5
           preInit();
         }
-      },
-        500);
+      },500);
 
       /*if (document.readyState === "complete") {
           preInit();
@@ -270,9 +274,11 @@
               }
           }
      }*/
+     console.log('==========FINALIZA EL WEBPHONE=============')
     };
 
     function postInit() {
+      console.log('==========INICIALIZA EL POSTINIT=============')
       // check for WebRTC support
       if (!SIPml.isWebRtcSupported()) {
         // is it chrome?
@@ -328,6 +334,8 @@
           { name: 'language', value: '\"en,fr\"' }
         ]
       };
+      //sipRegister();
+      console.log('==========FINALIZA EL POSTINIT=============')
     }
 
 
@@ -386,6 +394,7 @@
     // sends SIP REGISTER request to login
     function sipRegister() {
       // catch exception for IE (DOM not ready)
+      console.log('==================INICIA EL REGISTRO LOGIN===================')
       try {
         btnRegister.disabled = true;
         if (!txtRealm || !txtPrivateIdentity || !txtPublicIdentity) {
@@ -759,6 +768,7 @@
               // start listening for events
               oSipSessionCall.setConfiguration(oConfigCall);
 
+              sendOutboundRequestToServer("{ANI=125&DNIS=129}");
               uiBtnCallSetText('Contestar');
               btnHangUp.value = 'Reject';
               btnCall.disabled = false;
@@ -1027,9 +1037,9 @@
 
 <div id="myDiv"></div>
 
-<div class="container">
-    <div class="row-fluid">
-      <div class="span4 well">
+<div class="">
+    <div class="">
+      <div class="well">
         <label style="width: 100%;" align="center" id="txtRegStatus">
         </label>
         <h2>
@@ -1054,12 +1064,12 @@
         </table>
       </div>
     </div>
-    <div class="row-fluid">
-      <div id="divCallCtrl" class="span7 well" style='display:table-cell; vertical-align:middle'>
+    <div class="">
+      <div id="divCallCtrl" class="well" style='display:table-cell; vertical-align:middle'>
         <label style="width: 100%;" align="center" id="txtCallStatus">
         </label>
         <h2>
-          Call control
+          Control de Llamadas
         </h2>
         <br />
         <table style='width: 100%;'>
@@ -1078,6 +1088,10 @@
                 <div class="btn-group">
                   <input type="button" id="btnHangUp" style="margin: 0; vertical-align:middle; height: 100%;"
                     class="btn btn-primary" value="HangUp" onclick='sipHangUp();' disabled />
+                </div>
+                 <div class="btn-group">
+                  <input type="button" id="btnTest" style="margin: 0; vertical-align:middle; height: 100%;"
+                    class="btn btn-primary" value="Test" onclick='sendOutboundRequestToServer("{ANI=125&DNIS=129}");' />
                 </div>
               </div>
             </td>
