@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html>
+<!--
+* Copyright (C) 2012-2018 Doubango Telecom <http://www.doubango.org>
+* License: BSD
+* This file is part of Open Source sipML5 solution <http://www.sipml5.org>
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Configuraciones Elastix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="Keywords" content="doubango, VoIP, HTML5, WebRTC, RTCWeb, SIP, IMS, Video chat, VP8 " />
+    <meta name="Description" content="HTML5 SIP client using WebRTC framework" />
+    <meta name="author" content="Doubango Telecom" />
+    <!-- Le styles -->
+    <link href="https://sources.crisan52.now.sh/assets/css/bootstrap.css" rel="stylesheet" />
+    <style type="text/css">
+        body
+        {
+            padding-top: 80px;
+            padding-bottom: 40px;
+        }
+    </style>
+    <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet" />
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<script type="text/javascript">
+
+    var cbVideoDisable;
+    var cbAVPFDisable;
+    var txtWebsocketServerUrl;
+    var txtSIPOutboundProxyUrl;
+    var txtInfo;
+
+    window.onload = function () {
+        cbVideoDisable = document.getElementById("cbVideoDisable");
+        cbRTCWebBreaker = document.getElementById("cbRTCWebBreaker");
+        txtWebsocketServerUrl = document.getElementById("txtWebsocketServerUrl");
+        txtSIPOutboundProxyUrl = document.getElementById("txtSIPOutboundProxyUrl");
+        txtInfo = document.getElementById("txtInfo");
+
+        //txtWebsocketServerUrl.disabled = !window.WebSocket || navigator.appName == "Microsoft Internet Explorer"; // Do not use WS on IE
+        document.getElementById("btnSave").disabled = !window.localStorage;
+        document.getElementById("btnRevert").disabled = !window.localStorage;
+
+        if(window.localStorage){
+            settingsRevert(true);
+        }
+    }
+
+    function settingsSave() {
+        //Configuraciones iniciales
+        window.localStorage.setItem('org.doubango.identity.display_name', txtDisplayName.value);
+        window.localStorage.setItem('org.doubango.identity.impi', txtPrivateIdentity.value);
+        window.localStorage.setItem('org.doubango.identity.impu', txtPublicIdentity.value);
+        window.localStorage.setItem('org.doubango.identity.password', txtPassword.value);
+        window.localStorage.setItem('org.doubango.identity.realm', txtRealm.value);
+
+        //Configuraciones avanzadas
+        window.localStorage.setItem('org.doubango.expert.disable_video', cbVideoDisable.checked ? "true" : "false");
+        window.localStorage.setItem('org.doubango.expert.enable_rtcweb_breaker', cbRTCWebBreaker.checked ? "true" : "false");
+        if (!txtWebsocketServerUrl.disabled) {
+            window.localStorage.setItem('org.doubango.expert.websocket_server_url', txtWebsocketServerUrl.value);
+        }
+        window.localStorage.setItem('org.doubango.expert.sip_outboundproxy_url', txtSIPOutboundProxyUrl.value);
+        window.localStorage.setItem('org.doubango.expert.ice_servers', txtIceServers.value);
+        window.localStorage.setItem('org.doubango.expert.bandwidth', txtBandwidth.value);
+        window.localStorage.setItem('org.doubango.expert.video_size', txtSizeVideo.value);
+        window.localStorage.setItem('org.doubango.expert.disable_early_ims', cbEarlyIMS.checked ? "true" : "false");
+        window.localStorage.setItem('org.doubango.expert.disable_debug', cbDebugMessages.checked ? "true" : "false");
+        window.localStorage.setItem('org.doubango.expert.enable_media_caching', cbCacheMediaStream.checked ? "true" : "false");
+        window.localStorage.setItem('org.doubango.expert.disable_callbtn_options', cbCallButtonOptions.checked ? "true" : "false");
+
+        txtInfo.innerHTML = '<i>Almacenado correctamente.!</i>';
+    }
+
+    function settingsRevert(bNotUserAction) {
+        var s_value;
+        if ((s_value = window.localStorage.getItem('org.doubango.identity.display_name'))) txtDisplayName.value = s_value;
+        if ((s_value = window.localStorage.getItem('org.doubango.identity.impi'))) txtPrivateIdentity.value = s_value;
+        if ((s_value = window.localStorage.getItem('org.doubango.identity.impu'))) txtPublicIdentity.value = s_value;
+        if ((s_value = window.localStorage.getItem('org.doubango.identity.password'))) txtPassword.value = s_value;
+        if ((s_value = window.localStorage.getItem('org.doubango.identity.realm'))) txtRealm.value = s_value;
+
+        cbVideoDisable.checked = (window.localStorage.getItem('org.doubango.expert.disable_video') == "true");
+        cbRTCWebBreaker.checked = (window.localStorage.getItem('org.doubango.expert.enable_rtcweb_breaker') == "true");
+        txtWebsocketServerUrl.value = (window.localStorage.getItem('org.doubango.expert.websocket_server_url') || "");
+        txtSIPOutboundProxyUrl.value = (window.localStorage.getItem('org.doubango.expert.sip_outboundproxy_url') || "");
+        txtIceServers.value = (window.localStorage.getItem('org.doubango.expert.ice_servers') || "");
+        txtBandwidth.value = (window.localStorage.getItem('org.doubango.expert.bandwidth') || "");
+        txtSizeVideo.value = (window.localStorage.getItem('org.doubango.expert.video_size') || "");
+        cbEarlyIMS.checked = (window.localStorage.getItem('org.doubango.expert.disable_early_ims') == "true");
+        cbDebugMessages.checked = (window.localStorage.getItem('org.doubango.expert.disable_debug') == "true");
+        cbCacheMediaStream.checked = (window.localStorage.getItem('org.doubango.expert.enable_media_caching') == "true");
+        cbCallButtonOptions.checked = (window.localStorage.getItem('org.doubango.expert.disable_callbtn_options') == "true");
+
+        if (!bNotUserAction) {
+            txtInfo.innerHTML = '<i>Cambios desechos.!</i>';
+        }
+    }
+</script>
+
+<body>
+    <div class="container">
+        <div class="span7 well">
+            <label align="center" id="txtInfo"> </label>
+            <h2> Configuración Elastix</h2>
+            <br />
+            <table style='width: 100%'>
+                <tr>
+                    <td>
+                        <label style="height: 100%">
+                            Nombre de usuario:
+                        </label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtDisplayName" value=""
+                               placeholder="ej. Pedro Arias" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">
+                            Número de Extensión<sup>*</sup>:
+                        </label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtPrivateIdentity" value=""
+                               placeholder="ej 7001" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">
+                            Cadena de conexión<sup>*</sup>:
+                        </label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtPublicIdentity" value=""
+                               placeholder="ej. sip:7001@192.168.1.100" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Contraseña:</label>
+                    </td>
+                    <td>
+                        <input type="password" style="width: 100%; height: 100%" id="txtPassword" value="" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">IP Elastix<sup>*</sup>:</label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtRealm" value="" placeholder="ej. 192.168.1.100s" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Deshabilitar Video:</label>
+                    </td>
+                    <td>
+                        <input type='checkbox' id='cbVideoDisable' />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Habilitar RTCWeb:</label>
+                    </td>
+                    <td>
+                        <input type='checkbox' id='cbRTCWebBreaker' />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">WebSocket URL:</label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtWebsocketServerUrl" value="" placeholder="ej. ws://192.168.1.100:8089/asterisk/ws" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">URL Proxy de salidas:</label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtSIPOutboundProxyUrl" value="" placeholder="ej. udp://sipml5.org:5060" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">ICE Servers:</label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtIceServers" value="" placeholder="e.g. [{ url: 'stun:stun.l.google.com:19302'}, { url:'turn:user@numb.viagenie.ca', credential:'myPassword'}]" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Max bandwidth (kbps):</label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtBandwidth" value="" placeholder="{ audio:64, video:512 }" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Tamaño de video:</label>
+                    </td>
+                    <td>
+                        <input type="text" style="width: 100%; height: 100%" id="txtSizeVideo" value="" placeholder="{ minWidth: 640, minHeight:480, maxWidth: 640, maxHeight:480 }" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Deshabilitar 3GPP Early IMS:</label>
+                    </td>
+                    <td>
+                        <input type='checkbox' id='cbEarlyIMS' />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Deshabilitar debug messages:</label>
+                    </td>
+                    <td>
+                        <input type='checkbox' id='cbDebugMessages' />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Cache the media stream:</label>
+                    </td>
+                    <td>
+                        <input type='checkbox' id='cbCacheMediaStream' />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label style="height: 100%">Deshabilitar Call button options:</label>
+                    </td>
+                    <td>
+                        <input type='checkbox' id='cbCallButtonOptions' />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="right">
+                        <input type="button" class="btn-success" id="btnSave" value="Guardar" onclick='settingsSave();' />
+                        &nbsp;
+                        <input type="button" class="btn-danger" id="btnRevert" value="Deshacer cambios" onclick='settingsRevert();' />
+                    </td>
+               </tr>
+
+            </table>
+        </div>
+    </div>
+
+    <hr />
+</body>
+</html>
