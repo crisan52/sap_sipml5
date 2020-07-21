@@ -12,9 +12,9 @@
   -->
   <script src="https://192.168.1.127/assets/recursos/release/SIPml-api.js?svn=252" type="text/javascript"> </script>
   <link href="https://192.168.1.127/assets/recursos/css/bootstrap.css" rel="stylesheet" />
-
+  <link href="https://192.168.1.127/assets/recursos/css/style.css" rel="stylesheet" />
+  <link href="https://192.168.1.127/assets/recursos/icons/css/font-awesome.css" rel="stylesheet" />
   <!-- VERSION PARA PRODUCCION -->
-
   <script type="text/javascript">
 
     var CONSTANT = {
@@ -509,7 +509,7 @@
     // transfers the call
     function sipTransfer() {
       if (oSipSessionCall) {
-        var s_destination = prompt('Ingresar el número destino', '');
+        var s_destination = prompt('Ingresar el número al que desea transferir la llamada', '');
         if (!tsk_string_is_null_or_empty(s_destination)) {
           btnTransfer.disabled = true;
           if (oSipSessionCall.transfer(s_destination) != 0) {
@@ -527,7 +527,7 @@
       if (oSipSessionCall) {
         var i_ret;
         btnHoldResume.disabled = true;
-        txtCallStatus.innerHTML = oSipSessionCall.bHeld ? '<i>Resuming the call...</i>' : '<i>Holding the call...</i>';
+        txtCallStatus.innerHTML = oSipSessionCall.bHeld ? '<i>Resumiendo la llamada...</i>' : '<i>Poniendo la llamada en espera...</i>';
         i_ret = oSipSessionCall.bHeld ? oSipSessionCall.resume() : oSipSessionCall.hold();
         if (i_ret != 0) {
           txtCallStatus.innerHTML = '<i>Hold / Resume failed</i>';
@@ -550,12 +550,22 @@
         }
         oSipSessionCall.bMute = bMute;
         btnMute.value = bMute ? "Habilitar sonido" : "Silenciar";
+
+         //microphone mute icon
+         if(btnMute.value = bMute){
+            $('#muteIcon').addClass('fa-microphone-slash');
+            $('#muteIcon').removeClass('fa-microphone');
+        }else{
+            $('#muteIcon').removeClass('fa-microphone-slash');
+            $('#muteIcon').addClass('fa-microphone');
+        }
       }
     }
 
     // terminates the call (SIP BYE or CANCEL)
     function sipHangUp() {
       if (oSipSessionCall) {
+        stopAnimation();
         txtCallStatus.innerHTML = '<i>Terminando la llamada...</i>';
         oSipSessionCall.hangup({ events_listener: { events: '*', listener: onSipEventSession } });
       }
@@ -611,7 +621,6 @@
       divKeyPad.style.visibility = 'hidden';
       divGlassPanel.style.visibility = 'hidden';
     }
-
 
     //function fullScreen(b_fs) {
       //bFullScreen = b_fs;
@@ -675,11 +684,13 @@
     }
 
     function uiBtnCallSetText(s_text) {
+      var iconoContestar = '<i class="fa fa-phone"></i>';
       switch (s_text) {
         case "Call":
           {
-            btnCall.value = btnCall.innerHTML = 'Llamar';
-            btnCall.setAttribute("class", "btn btn-primary");
+            //btnCall.value = btnCall.innerHTML = iconoContestar + ' ' + 'Llamar';
+            //btnCall.value = btnCall.innerHTML = iconoContestar;
+            //stopAnimation();
             btnCall.onclick = function () { sipCall('call-audio'); };
             ulCallOptions.style.visibility = "hidden";
             if (!bDisableCallBtnOptions && ulCallOptions.parentNode != divBtnCallGroup) {
@@ -693,8 +704,9 @@
           }
         default:
           {
-            btnCall.value = btnCall.innerHTML = s_text;
-            btnCall.setAttribute("class", "btn btn-primary");
+            //btnCall.value = btnCall.innerHTML = iconoContestar + ' ' + s_text;
+            //btnCall.value = btnCall.innerHTML = iconoContestar;
+            //startAnimation();
             btnCall.onclick = function () { sipCall('call-audio'); };
             ulCallOptions.style.visibility = "hidden";
             if (ulCallOptions.parentNode == divBtnCallGroup) {
@@ -703,6 +715,17 @@
             break;
           }
       }
+    }
+
+    function startAnimation() {
+      btnCall.style.animationPlayState="running";
+      btnCall.style.animationPlayState="running";
+    }
+
+    function stopAnimation() {
+      btnCall.setAttribute("class", "btn btn-success");
+      btnCall.style.animationPlayState="paused";
+      btnCall.style.animationPlayState="paused";
     }
 
     function uiCallTerminated(s_description) {
@@ -721,6 +744,7 @@
 
       txtCallStatus.innerHTML = "<i>" + s_description + "</i>";
       divCallOptions.style.opacity = 0;
+      closeKeyPad();
 
       if (oNotifICall) {
         oNotifICall.cancel();
@@ -771,6 +795,7 @@
             stopRingTone();
 
             divCallOptions.style.opacity = 0;
+            closeKeyPad();
 
             txtCallStatus.innerHTML = '';
             txtRegStatus.innerHTML = bFailure ? "<i>Desconectado: <b>" + e.description + "</b></i>" : "<i>Desconectado</i>";
@@ -852,6 +877,11 @@
               }
 
               txtCallStatus.innerHTML = "<i>" + e.description + "</i>";
+              if (divCallOptions.style.opacity = bConnected) {
+                openKeyPad();
+              } else {
+                closeKeyPad();
+              }
               divCallOptions.style.opacity = bConnected ? 1 : 0;
             }
             break;
@@ -892,7 +922,7 @@
               var iSipResponseCode = e.getSipResponseCode();
               if (iSipResponseCode == 180 || iSipResponseCode == 183) {
                 startRingbackTone();
-                txtCallStatus.innerHTML = '<i>Remote ringing...</i>';
+                txtCallStatus.innerHTML = '<i>Llamando...</i>';
               }
             }
             break;
@@ -917,8 +947,10 @@
               }
               btnHoldResume.value = 'Resume';
               btnHoldResume.disabled = false;
-              txtCallStatus.innerHTML = '<i>Call placed on hold</i>';
+              txtCallStatus.innerHTML = '<i>Llamada en espera</i>';
               oSipSessionCall.bHeld = true;
+              $('#pauseIcon').addClass('fa-play');
+              $('#pauseIcon').removeClass('fa-pause');
             }
             break;
           }
@@ -938,8 +970,10 @@
               oSipSessionCall.bTransfering = false;
               btnHoldResume.value = 'Hold';
               btnHoldResume.disabled = false;
-              txtCallStatus.innerHTML = '<i>Call taken off hold</i>';
+              txtCallStatus.innerHTML = '<i>Llamada en espera desactivada</i>';
               oSipSessionCall.bHeld = false;
+              $('#pauseIcon').addClass('fa-pause');
+              $('#pauseIcon').removeClass('fa-play');
             }
             break;
           }
@@ -1044,71 +1078,75 @@
 </head>
 
 <body onload="inicializar()" style="background-color:white;">
-  <div class="">
-    <div id="divCallCtrl" class="well" style='display:table-cell; vertical-align:middle'>
-      <div style="text-align:left">
-        <img src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" width="15%" height="15%" />
-      </div>
-      <label style="width: 100%;" align="center" id="txtRegStatus">
-      </label>
-      <label style="width: 100%;" align="center" id="txtCallStatus">
-      </label>
-
-      <div style="text-align:center">
-        <input type="button" class="btn btn-success" id="btnRegister" value="LogIn" disabled onclick='sipRegister();' />
-      </div>
-       <!-- <input type="button" class="btn btn-danger" id="btnUnRegister" value="LogOut" disabled
-              onclick='sipUnRegister();' /> -->
-      <table style='width: 100%;'>
-        <tr>
-          <td style="white-space:nowrap;">
-            <input type="text" style="width: 100%; height:100%;" id="txtPhoneNumber" value=""
-              placeholder="Digite el numero al que desea llamar" />
-          </td>
-        </tr>
-        <tr>
-          <td colspan="0" align="center">
-            <div class="btn-toolbar" style="margin: 0; vertical-align:middle">
-              <div id="divBtnCallGroup" class="btn-group">
-                <button id="btnCall" disabled class="btn btn-primary" data-toggle="dropdown">
-                  Llamar
-                </button>
-              </div>&nbsp;&nbsp;
-              <div class="btn-group">
-                <input type="button" id="btnHangUp" style="margin: 0; vertical-align:middle; height: 100%;"
-                  class="btn btn-danger" value="Colgar" onclick='sipHangUp();' disabled />
-              </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td align='center'>
-            <div id='divCallOptions' class='call-options' style='opacity: 0; margin-top: 0px'>
-              <input type="button" class="btn" style="" id="btnMute" value="Silenciar" onclick='sipToggleMute();' /> &nbsp;
-              <input type="button" class="btn" style="" id="btnHoldResume" value="Hold"
-                onclick='sipToggleHoldResume();' /> &nbsp;
-              <input type="button" class="btn" style="" id="btnTransfer" value="Transferir" onclick='sipTransfer();' />
-              <input type="button" class="btn" style="" id="btnKeyPad" value="Teclado" onclick='openKeyPad();' />
-            </div>
-          </td>
-        </tr>
-      </table>
+  <div id="divCallCtrl" style='display:table-cell; vertical-align:middle; padding: 10px;'>
+    <div style="text-align:left">
+      <img src="https://www.sap.com/dam/application/shared/logos/sap-logo-svg.svg" width="15%" height="15%" />
     </div>
-     
+    <label style="width: 100%;" align="center" id="txtRegStatus">
+    </label>
+    <label style="width: 100%;" align="center" id="txtCallStatus">
+    </label>
+
+    <div style="text-align:center">
+      <input type="button" class="btn btn-success" id="btnRegister" value="LogIn" disabled onclick='sipRegister();' />
+    </div>
+      <!-- <input type="button" class="btn btn-danger" id="btnUnRegister" value="LogOut" disabled
+            onclick='sipUnRegister();' /> -->
+
+    <div id="callControl">
+      <div id="to">
+        <input id="txtPhoneNumber" type="text" placeholder="Digite el numero al que desea llamar" value=""/>
+      </div>
+    </div>
+  
+    <div class="btn-toolbar" style="margin: 0; vertical-align:middle; text-align: center;">
+      <div id="divBtnCallGroup" class="btn-group">
+        <button id="btnCall" disabled class="btn btn-success">
+          <i id="animated" class="fa fa-phone"></i>
+        </button>
+      </div>&nbsp;&nbsp;
+      <div class="btn-group">
+        <button id="btnHangUp" disabled class="btn btn-danger" onclick='sipHangUp();'>
+          <i class="fa fa-phone"></i>
+        </button>
+      </div>
+
+      <div id='divCallOptions' class='call-options' style='opacity: 0;'>
+        <button id="btnHoldResume" class="" onclick='sipToggleHoldResume();'>
+          <i id="pauseIcon" class="fa fa-pause margin-icon"></i>
+        </button>
+        <button id="btnMute" class="" onclick='sipToggleMute();'>
+          <i id="muteIcon" class="fa fa-microphone margin-icon"></i>
+        </button>
+        
+        <button id="btnTransfer" class="" onclick='sipTransfer();'>
+          <i id="exchangeIcon" class="fa fa-exchange margin-icon"></i>
+        </button>
+      </div>
+    </div>
   </div>
   <!-- /container -->
   <!-- Glass Panel -->
   <div id='divGlassPanel' class='glass-panel' style='visibility:hidden'></div>
   <!-- KeyPad Div -->
-  <div id='divKeyPad' class='span3 well div-keypad center' style="left:0px; top:0px; width:250; height:240; visibility:hidden">
-      <table style="width: 100%; height: 100%">
-          <tr><td><input type="button" style="width: 33%" class="btn" value="1" onclick="sipSendDTMF('1');" /><input type="button" style="width: 33%" class="btn" value="2" onclick="sipSendDTMF('2');" /><input type="button" style="width: 33%" class="btn" value="3" onclick="sipSendDTMF('3');" /></td></tr>
-          <tr><td><input type="button" style="width: 33%" class="btn" value="4" onclick="sipSendDTMF('4');" /><input type="button" style="width: 33%" class="btn" value="5" onclick="sipSendDTMF('5');" /><input type="button" style="width: 33%" class="btn" value="6" onclick="sipSendDTMF('6');" /></td></tr>
-          <tr><td><input type="button" style="width: 33%" class="btn" value="7" onclick="sipSendDTMF('7');" /><input type="button" style="width: 33%" class="btn" value="8" onclick="sipSendDTMF('8');" /><input type="button" style="width: 33%" class="btn" value="9" onclick="sipSendDTMF('9');" /></td></tr>
-          <tr><td><input type="button" style="width: 33%" class="btn" value="*" onclick="sipSendDTMF('*');" /><input type="button" style="width: 33%" class="btn" value="0" onclick="sipSendDTMF('0');" /><input type="button" style="width: 33%" class="btn" value="#" onclick="sipSendDTMF('#');" /></td></tr>
-          <tr><td colspan=3><input type="button" style="width: 100%" class="btn btn-medium btn-danger" value="Cerrar" onclick="closeKeyPad();" /></td></tr>
-      </table>
+  <!---------DIALPAD---------------------------------------------------->
+   <div id='divKeyPad' class='span3 div-keypad center' style="left:0px; top:0px; width:250; height:240; visibility:hidden">
+    <div id="dialPad" >
+      <div class="dialpad-char" data-value="1" unselectable="on" onclick="sipSendDTMF('1');">1</div>
+      <div class="dialpad-char" data-value="2" unselectable="on" onclick="sipSendDTMF('2');">2</div>
+      <div class="dialpad-char" data-value="3" unselectable="on" onclick="sipSendDTMF('3');">3</div>
+      <div class="dialpad-char" data-value="4" unselectable="on" onclick="sipSendDTMF('4');">4</div>
+      <div class="dialpad-char" data-value="5" unselectable="on" onclick="sipSendDTMF('5');">5</div>
+      <div class="dialpad-char" data-value="6" unselectable="on" onclick="sipSendDTMF('6');">6</div>
+      <div class="dialpad-char" data-value="7" unselectable="on" onclick="sipSendDTMF('7');">7</div>
+      <div class="dialpad-char" data-value="8" unselectable="on" onclick="sipSendDTMF('8');">8</div>
+      <div class="dialpad-char" data-value="9" unselectable="on" onclick="sipSendDTMF('9');">9</div>
+      <div class="dialpad-char" data-value="*" unselectable="on" onclick="sipSendDTMF('*');">*</div>
+      <div class="dialpad-char" data-value="0" unselectable="on" onclick="sipSendDTMF('0');">0</div>
+      <div class="dialpad-char" data-value="#" unselectable="on" onclick="sipSendDTMF('#');">#</div>
+    </div>
   </div>
+  <br></br>
   <!-- Call button options -->
   <ul id="ulCallOptions" class="dropdown-menu" style="visibility:hidden">
     <li><a href="#" onclick='sipCall("call-audio");'>Audio</a></li>
